@@ -1,0 +1,22 @@
+input:
+  http_client:
+    url: http://datamall2.mytransport.sg/ltaodataservice/Taxi-Availability
+    verb: GET
+    headers:
+      AccountKey: ${LTA_ACCOUNT_KEY}
+    rate_limit: once_per_minute
+pipeline:
+  processors:
+    - bloblang: |
+        root = this.value
+output:
+  label: ""
+  file:
+    path: ./data/data.txt
+    codec: lines
+
+rate_limit_resources:
+  - label: once_per_minute
+    local:
+      count: 1
+      interval: 1m

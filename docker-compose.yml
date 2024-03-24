@@ -1,0 +1,30 @@
+services:
+    # === Database ===
+    postgres:
+        restart: always
+        image: postgres:16.2-bullseye
+        environment:
+            POSTGRES_DB: bead_database
+            POSTGRES_USER: ${USER}
+            POSTGRES_PASSWORD: ${PASSWORD}
+        ports:
+            - 5432:5432
+        networks:
+            - bead-network
+        volumes:
+            - bead_db:/var/lib/postgresql/data
+    # === Web ===
+    web:
+        build:
+            context: ./web
+            dockerfile: Dockerfile
+
+# === Volumes (DB) ===
+volumes:
+    bead_db:
+
+# === Network ===
+networks:
+    bead-network:
+        driver: bridge
+        name: bead-network
