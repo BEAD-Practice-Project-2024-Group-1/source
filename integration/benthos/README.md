@@ -14,11 +14,23 @@ TODO: Containerize everything and allow single docker compose to run entire proj
 
 ## Quickstart
 
-Benthos
+1. Create a new `.env` file to change based on the sample
+
+```bash
+cp .env.sample .env
+```
+
+2. Set the LTA account key
+
+```bash
+export LTA_ACCOUNT_KEY=<YOUR_LTA_ACCOUNT_KEY_HERE>
+```
+
+3. Load the `.env` file and run the Benthos configuration file; it will run the Python script and pipe the output into the database
 
 ```bash
 source .env
-LTA_ACCOUNT_KEY=$LTA_ACCOUNT_KEY benthos -c bead.yaml
+benthos -c bead.yaml
 ```
 
 ## Notes
@@ -29,5 +41,5 @@ Python Script Only:
 
 ```bash
 source .env
-LTA_ACCOUNT_KEY=$LTA_ACCOUNT_KEY python get-all-taxi-availability.py
+python get-all-taxi-availability.py
 ```
