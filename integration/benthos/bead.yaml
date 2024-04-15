@@ -1,22 +1,17 @@
 input:
-  http_client:
-    url: http://datamall2.mytransport.sg/ltaodataservice/Taxi-Availability
-    verb: GET
-    headers:
-      AccountKey: ${LTA_ACCOUNT_KEY}
-    rate_limit: once_per_minute
-pipeline:
-  processors:
-    - bloblang: |
-        root = this.value
+  label: ""
+  subprocess:
+    name: python
+    args: [get-all-taxi-availability.py]
+
 output:
   label: ""
-  file:
-    path: ./data/data.txt
-    codec: lines
-
-rate_limit_resources:
-  - label: once_per_minute
-    local:
-      count: 1
-      interval: 1m
+  sql_raw:
+    driver: postgres
+    dsn: postgres://admin:password@localhost:5432/bead?sslmode=disable
+    query: INSERT INTO taxi_availability (location) VALUES (ST_SetSRID(ST_MakePoint($1, $2), 4326));
+    args_mapping: |
+      root = [ this.Longitude, this.Latitude ]
+    batching:
+      count: 500
+      period: 1s

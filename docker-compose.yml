@@ -1,10 +1,12 @@
 services:
     # === Database ===
-    postgres:
+    db:
         restart: always
-        image: postgres:16.2-bullseye
+        build:
+            context: ./datasources/bead_postgres
+            dockerfile: Dockerfile
         environment:
-            POSTGRES_DB: bead_database
+            POSTGRES_DB: bead
             POSTGRES_USER: ${USER}
             POSTGRES_PASSWORD: ${PASSWORD}
         ports:
