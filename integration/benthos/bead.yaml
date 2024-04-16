@@ -1,17 +1,31 @@
 input:
-  label: ""
-  subprocess:
-    name: python
-    args: [get-all-taxi-availability.py]
+  http_client:
+    url: "${SCRIPT_URL}"
+    verb: GET
+    rate_limit: once_per_minute
+
+pipeline:
+  processors:
+    - unarchive:
+        format: json_array
 
 output:
   label: ""
   sql_raw:
     driver: postgres
-    dsn: postgres://admin:password@localhost:5432/bead?sslmode=disable
+    dsn: postgres://${USER}:${PASSWORD}@${DATABASE_HOST}:5432/bead?sslmode=disable
     query: INSERT INTO taxi_availability (location) VALUES (ST_SetSRID(ST_MakePoint($1, $2), 4326));
     args_mapping: |
       root = [ this.Longitude, this.Latitude ]
     batching:
       count: 500
       period: 1s
+
+rate_limit_resources:
+  - label: once_per_minute
+    local:
+      count: 1
+      interval: 1m
+
+logger:
+  level: ALL

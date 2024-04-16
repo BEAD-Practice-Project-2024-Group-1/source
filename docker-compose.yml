@@ -15,11 +15,40 @@ services:
             - bead-network
         volumes:
             - bead_db:/var/lib/postgresql/data
-    # === Web ===
-    web:
+    # === Benthos ===
+    benthos:
+        restart: always
         build:
-            context: ./web
+            context: ./integration/benthos
+        environment:
+            SCRIPT_URL: ${SCRIPT_URL}
+            USER: ${USER}
+            PASSWORD: ${PASSWORD}
+            DATABASE_HOST: ${DATABASE_HOST}
+        networks:
+            - bead-network
+
+    # === Script Server ===
+    python-server:
+        restart: always
+        build:
+            context: ./integration/python
             dockerfile: Dockerfile
+        environment:
+            LTA_ACCOUNT_KEY: ${LTA_ACCOUNT_KEY}
+        ports:
+            - 8080:8080
+        networks:
+            - bead-network
+
+    # === Web ===
+    # web:
+    #     restart: always
+    #     build:
+    #         context: ./web
+    #         dockerfile: Dockerfile
+    #     networks:
+    #         - bead-network
 
 # === Volumes (DB) ===
 volumes:
