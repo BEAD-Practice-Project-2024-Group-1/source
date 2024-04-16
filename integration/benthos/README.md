@@ -2,15 +2,13 @@
 
 This folder contains benthos configuration files to run for integration pipleines.
 
-It contains a Python script to periodically pull taxi availability information from LTA DataMall. Benthos runs this
-script and inserts all the data into the PostGIS database.
+It calls a Python script periodically to retrieve taxi availability, and pipes that output into a PostGIS database.
+
+These are meant to be easily executed through the top-level docker-compose but Benthos can also be run directly here for testing purposes.
 
 ## Pre-requisites
 
 -   [benthos](https://www.benthos.dev/)
--   [python](https://www.python.org/downloads/release/python-314/)
-
-TODO: Containerize everything and allow single docker compose to run entire project
 
 ## Quickstart
 
@@ -20,26 +18,29 @@ TODO: Containerize everything and allow single docker compose to run entire proj
 cp .env.sample .env
 ```
 
-2. Set the LTA account key
+2. Set the environment variables
 
 ```bash
-export LTA_ACCOUNT_KEY=<YOUR_LTA_ACCOUNT_KEY_HERE>
+# Standardized username for all services (for convenience)
+export USER=...
+
+# Standardized password for all services (for convenience)
+# (SECRET)
+export PASSWORD=...
+
+# URL to the script server
+export SCRIPT_URL=http://localhost:8080/
+
+# Hostname for the database
+export DATABASE_HOST=localhost
+
 ```
 
-3. Load the `.env` file and run the Benthos configuration file; it will run the Python script and pipe the output into the database
+3. Load the `.env` file and run the Benthos configuration file; it will run the Python script and pipe the
+   output into the database. Note that the Python script server and Database need to be running for this to work, just
+   run the top level docker compose for that.
 
 ```bash
 source .env
 benthos -c bead.yaml
-```
-
-## Notes
-
-`ALTER USER ... with PASSWORD '...'`
-
-Python Script Only:
-
-```bash
-source .env
-python get-all-taxi-availability.py
 ```

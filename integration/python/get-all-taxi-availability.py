@@ -1,8 +1,7 @@
-import sys
+
+from flask import Flask
 import requests
 import os
-import json
-import time
 
 API_URL = "http://datamall2.mytransport.sg/ltaodataservice/Taxi-Availability"
 SKIP_CONST = 500
@@ -12,11 +11,14 @@ HEADERS = {
     "AccountKey": os.environ.get('LTA_ACCOUNT_KEY')
 }
 
-while True:
-    skip_cursor = 0
+app = Flask(__name__)
 
+@app.route("/")
+def get_taxis():
+    skip_cursor = 0
     counter = 0
     more = True
+    all_results = []
 
     while more and counter < QUERY_LIMIT:
         params = {
@@ -32,12 +34,12 @@ while True:
         if number_of_results < SKIP_CONST:
             more = False
 
-        for loc in results.get("value"):
-            try:
-                print(json.dumps(loc), flush=True)
-            except (BrokenPipeError, IOError):
-                pass
+        all_results = all_results + results.get("value")
 
         skip_cursor += SKIP_CONST
 
-    time.sleep(DELAY_IN_SECONDS)
+    try:
+        return all_results
+    except Exception as e:
+        print(e)
+        pass
