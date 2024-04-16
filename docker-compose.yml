@@ -40,6 +40,13 @@ services:
             - 8080:8080
         networks:
             - bead-network
+    # === Spark ===
+    spark:
+        build:
+            context: ./spark
+            dockerfile: Dockerfile
+        environment:
+            SPARK_LOCAL_IP: 127.0.0.1
 
     # === Web ===
     # web:

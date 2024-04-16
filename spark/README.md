@@ -1,5 +1,11 @@
 # [BEAD 2024 Practice Project - Group 1] Spark
 
+## Quickstart
+
+https://docs.datamechanics.co/docs/docker-images
+
+# Old Stuff
+
 This folder contains the Spark files to process the data sources
 
 ## Pre-requisites
