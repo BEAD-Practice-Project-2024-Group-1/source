@@ -36,6 +36,7 @@ services:
             dockerfile: Dockerfile
         environment:
             LTA_ACCOUNT_KEY: ${LTA_ACCOUNT_KEY}
+            ONE_MAP_ACCOUNT_KEY: ${ONE_MAP_ACCOUNT_KEY}
         ports:
             - 8080:8080
         networks:

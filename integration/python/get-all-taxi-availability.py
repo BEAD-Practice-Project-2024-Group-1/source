@@ -43,3 +43,18 @@ def get_taxis():
     except Exception as e:
         print(e)
         pass
+
+ONEMAP_API_URL = "https://www.onemap.gov.sg/api/public/popapi/getAllPlanningarea"
+ONEMAP_HEADERS = {
+    "Authorization": os.environ.get('ONE_MAP_ACCOUNT_KEY')
+}
+
+@app.route("/districts")
+def get_districts():
+    response = requests.get(ONEMAP_API_URL, headers=ONEMAP_HEADERS)
+    result = response.json()
+    try:
+        return result
+    except Exception as e:
+        print(e)
+        pass
