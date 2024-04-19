@@ -42,4 +42,4 @@ COPY . .
 EXPOSE 8080
 
 # Run the application.
-CMD python3 -m flask --app get-all-taxi-availability run --host=0.0.0.0 --port=8080
+CMD python3 -m flask --app script_server run --host=0.0.0.0 --port=8080
