@@ -44,6 +44,7 @@ DATABASE_HOST=db
 3. Just run the docker compose file and all services should start up fine
 
 ```bash
+source .env
 docker compose up
 ```
 

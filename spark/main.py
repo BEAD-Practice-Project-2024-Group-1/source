@@ -1,23 +1,54 @@
+import os
 from pyspark.sql import SparkSession
-from pyspark.sql.functions import col, regexp_replace
+from pyspark.sql.functions import col
 
-# Create a SparkSession
-spark = SparkSession.builder.appName("Testing PySpark Example").getOrCreate()
+USER = os.environ['USER']
+PASSWORD = os.environ['PASSWORD']
+DATABASE_HOST = os.environ['DATABASE_HOST']
 
-sample_data = [{"name": "John    D.", "age": 30},
-  {"name": "Alice   G.", "age": 25},
-  {"name": "Bob  T.", "age": 35},
-  {"name": "Eve   A.", "age": 28}]
+print("USER: " + USER)
+print("PASSWORD: " + PASSWORD)
+print("DATABASE_HOST: " + DATABASE_HOST)
 
-df = spark.createDataFrame(sample_data)
+# (Assuming environment variables are set for connection details)
+url = f"jdbc:postgresql://{DATABASE_HOST}:5432/bead"
 
-# Remove additional spaces in name
-def remove_extra_spaces(df, column_name):
-    # Remove extra spaces from the specified column
-    df_transformed = df.withColumn(column_name, regexp_replace(col(column_name), "\\s+", " "))
 
-    return df_transformed
+def read_taxi_availability():
+  """
+  Establishes a SparkSession, reads data from the taxi_availability table,
+  and displays the results. Handles potential errors during connection or data access.
 
-transformed_df = remove_extra_spaces(df, "name")
+  Returns:
+      None
+  """
 
-transformed_df.show()
+  # Create SparkSession
+  spark = SparkSession.builder.appName("Spark-PostgreSQL") \
+      .config("spark.jars", './postgresql-42.7.3.jar') \
+      .getOrCreate()
+
+  try:
+    # Read data from PostgreSQL table
+    df = spark.read.format("jdbc") \
+      .option("url", url) \
+      .option("driver", "org.postgresql.Driver") \
+      .option("dbtable", "public.districts") \
+      .option("user", USER) \
+      .option("password", PASSWORD) \
+      .load()
+
+    # Display results (you can modify this section for specific formatting)
+    print("Districts Data:")
+    df.show(truncate=False)  # Show all rows without truncation
+
+  except Exception as e:
+    print(f"Error reading districts data: {str(e)}")
+
+  finally:
+    # Stop SparkSession
+    spark.stop()
+
+# Example usage
+if __name__ == "__main__":
+  read_taxi_availability()

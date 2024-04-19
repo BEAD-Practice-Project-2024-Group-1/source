@@ -29,7 +29,7 @@ export USER=...
 export PASSWORD=...
 
 # URL to the script server
-export SCRIPT_URL=http://localhost:8080/
+export SCRIPT_URL=http://localhost:8080
 
 # Hostname for the database
 export DATABASE_HOST=localhost

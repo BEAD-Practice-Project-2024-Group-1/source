@@ -6,7 +6,7 @@ rate_limit_resources:
   - label: once_per_minute
     local:
       count: 1
-      interval: 5s
+      interval: 1m
 
 output_resources:
   - label: store_taxi_availability_location_in_database
@@ -23,8 +23,7 @@ output_resources:
     kafka:
       addresses:
         - ${KAFKA_BROKER_ADDR}
-      topic: "availTaxis"
-      key: ""
+      topic: availTaxis
       partitioner: fnv1a_hash
       compression: none
       max_in_flight: 64

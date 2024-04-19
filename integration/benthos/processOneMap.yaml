@@ -1,6 +1,6 @@
 input:
   http_client:
-    url: "${SCRIPT_URL}/districts"
+    url: ${SCRIPT_URL}/districts
     verb: GET
     rate_limit: once_per_day
 
