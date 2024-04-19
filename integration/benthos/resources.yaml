@@ -6,4 +6,29 @@ rate_limit_resources:
   - label: once_per_minute
     local:
       count: 1
-      interval: 60s
+      interval: 5s
+
+output_resources:
+  - label: store_taxi_availability_location_in_database
+    sql_raw:
+      driver: postgres
+      dsn: postgres://${USER}:${PASSWORD}@${DATABASE_HOST}:5432/bead?sslmode=disable
+      query: INSERT INTO taxi_availability (batch_id, location) VALUES ($1, ST_SetSRID(ST_MakePoint($2, $3), 4326));
+      args_mapping: |
+        root = [ this.b_id, this.lon, this.lat ]
+      batching:
+        count: 500
+        period: 1s
+  - label: publish_taxi_availability_to_kafka
+    kafka:
+      addresses:
+        - ${KAFKA_BROKER_ADDR}
+      topic: "availTaxis"
+      key: ""
+      partitioner: fnv1a_hash
+      compression: none
+      max_in_flight: 64
+      batching:
+        count: 3000
+        byte_size: 0
+        period: 1s

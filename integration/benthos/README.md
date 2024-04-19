@@ -42,5 +42,5 @@ export DATABASE_HOST=localhost
 
 ```bash
 source .env
-benthos -c bead.yaml
+benthos -c ./config.yaml -r ./resources.yaml streams ./processOneMap.yaml ./processTaxiAvailability.yaml
 ```

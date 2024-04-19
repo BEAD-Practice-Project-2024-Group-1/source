@@ -25,6 +25,7 @@ services:
             USER: ${USER}
             PASSWORD: ${PASSWORD}
             DATABASE_HOST: ${DATABASE_HOST}
+            KAFKA_BROKER_ADDR: ${KAFKA_BROKER_ADDR}
         networks:
             - bead-network
 

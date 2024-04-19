@@ -20,6 +20,10 @@ cp .env.sample .env
 # Account key to be used in LTA DataMall API calls
 # (SECRET)
 export LTA_ACCOUNT_KEY=
+
+# Account key to be used in One Map API calls
+# (SECRET)
+export ONE_MAP_ACCOUNT_KEY=
 ```
 
 3. Load the `.env` file and run the Python web server - the default root route returns all taxi availability
