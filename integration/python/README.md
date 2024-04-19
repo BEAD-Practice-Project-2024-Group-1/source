@@ -26,5 +26,5 @@ export LTA_ACCOUNT_KEY=
 
 ```bash
 source .env
-python -m flask --app get-all-taxi-availability run --host=0.0.0.0 --port=8080
+python -m flask --app script_server run --host=0.0.0.0 --port=8080
 ```

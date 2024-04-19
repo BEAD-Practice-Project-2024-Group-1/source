@@ -1,6 +1,6 @@
 input:
   http_client:
-    url: "${SCRIPT_URL}/taxis"
+    url: "${SCRIPT_URL}"
     verb: GET
     rate_limit: once_per_minute
 
@@ -10,13 +10,13 @@ pipeline:
         format: json_array
 
 output:
-  label: ""
+  label: "lta_to_postgres"
   sql_raw:
     driver: postgres
     dsn: postgres://${USER}:${PASSWORD}@${DATABASE_HOST}:5432/bead?sslmode=disable
-    query: INSERT INTO taxi_availability (location) VALUES (ST_SetSRID(ST_MakePoint($1, $2), 4326));
+    query: INSERT INTO taxi_availability (batch_id, location) VALUES ($1, ST_SetSRID(ST_MakePoint($2, $3), 4326));
     args_mapping: |
-      root = [ this.Longitude, this.Latitude ]
+      root = [ this.b_id, this.lon, this.lat ]
     batching:
       count: 500
       period: 1s
