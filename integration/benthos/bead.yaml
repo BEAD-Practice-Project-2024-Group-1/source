@@ -14,9 +14,9 @@ output:
   sql_raw:
     driver: postgres
     dsn: postgres://${USER}:${PASSWORD}@${DATABASE_HOST}:5432/bead?sslmode=disable
-    query: INSERT INTO taxi_availability (location) VALUES (ST_SetSRID(ST_MakePoint($1, $2), 4326));
+    query: INSERT INTO taxi_availability (batch_id, location) VALUES ($1, ST_SetSRID(ST_MakePoint($2, $3), 4326));
     args_mapping: |
-      root = [ this.Longitude, this.Latitude ]
+      root = [ this.b_id, this.lon, this.lat ]
     batching:
       count: 500
       period: 1s
@@ -26,6 +26,3 @@ rate_limit_resources:
     local:
       count: 1
       interval: 1m
-
-logger:
-  level: ALL
