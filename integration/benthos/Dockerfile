@@ -8,4 +8,4 @@ ENV USER=${USER}
 ENV PASSWORD=${PASSWORD}
 ENV DATABASE_HOST=${DATABASE_HOST}
 
-CMD ["-c", "/bead.yaml"]
+CMD ["-c", "/config.yaml", "-r", "/resources.yaml", "streams", "/processOneMap.yaml", "/processTaxiAvailability.yaml"]

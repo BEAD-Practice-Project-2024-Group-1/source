@@ -1,6 +1,6 @@
 input:
   http_client:
-    url: "${SCRIPT_URL}"
+    url: "${SCRIPT_URL}/taxis"
     verb: GET
     rate_limit: once_per_minute
 
@@ -20,12 +20,3 @@ output:
     batching:
       count: 500
       period: 1s
-
-rate_limit_resources:
-  - label: once_per_minute
-    local:
-      count: 1
-      interval: 1m
-
-logger:
-  level: ALL

@@ -13,7 +13,7 @@ HEADERS = {
 
 app = Flask(__name__)
 
-@app.route("/")
+@app.route("/taxis")
 def get_taxis():
     skip_cursor = 0
     counter = 0
@@ -42,7 +42,6 @@ def get_taxis():
         return all_results
     except Exception as e:
         print(e)
-        pass
 
 ONEMAP_API_URL = "https://www.onemap.gov.sg/api/public/popapi/getAllPlanningarea"
 ONEMAP_HEADERS = {
@@ -54,7 +53,6 @@ def get_districts():
     response = requests.get(ONEMAP_API_URL, headers=ONEMAP_HEADERS)
     result = response.json()
     try:
-        return result
+        return result.get("SearchResults")
     except Exception as e:
         print(e)
-        pass
