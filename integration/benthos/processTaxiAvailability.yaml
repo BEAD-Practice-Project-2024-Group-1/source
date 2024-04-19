@@ -8,15 +8,10 @@ pipeline:
   processors:
     - unarchive:
         format: json_array
-
 output:
-  label: "lta_to_postgres"
-  sql_raw:
-    driver: postgres
-    dsn: postgres://${USER}:${PASSWORD}@${DATABASE_HOST}:5432/bead?sslmode=disable
-    query: INSERT INTO taxi_availability (batch_id, location) VALUES ($1, ST_SetSRID(ST_MakePoint($2, $3), 4326));
-    args_mapping: |
-      root = [ this.b_id, this.lon, this.lat ]
-    batching:
-      count: 500
-      period: 1s
+  label: ""
+  broker:
+    pattern: fan_out
+    outputs:
+      - resource: store_taxi_availability_location_in_database
+      - resource: publish_taxi_availability_to_kafka
