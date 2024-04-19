@@ -1,0 +1,9 @@
+rate_limit_resources:
+  - label: once_per_day
+    local:
+      count: 1
+      interval: 86400s
+  - label: once_per_minute
+    local:
+      count: 1
+      interval: 60s

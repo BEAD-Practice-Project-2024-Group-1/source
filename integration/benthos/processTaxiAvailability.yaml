@@ -1,6 +1,6 @@
 input:
   http_client:
-    url: "${SCRIPT_URL}"
+    url: "${SCRIPT_URL}/taxi-availability"
     verb: GET
     rate_limit: once_per_minute
 
@@ -10,7 +10,7 @@ pipeline:
         format: json_array
 
 output:
-  label: ""
+  label: "lta_to_postgres"
   sql_raw:
     driver: postgres
     dsn: postgres://${USER}:${PASSWORD}@${DATABASE_HOST}:5432/bead?sslmode=disable
@@ -20,9 +20,3 @@ output:
     batching:
       count: 500
       period: 1s
-
-rate_limit_resources:
-  - label: once_per_minute
-    local:
-      count: 1
-      interval: 1m
