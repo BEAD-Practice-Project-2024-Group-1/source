@@ -1,6 +1,6 @@
 input:
   http_client:
-    url: "${SCRIPT_URL}"
+    url: "${SCRIPT_URL}/taxi-availability"
     verb: GET
     rate_limit: once_per_minute
 
