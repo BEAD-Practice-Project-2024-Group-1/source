@@ -2,7 +2,7 @@ input:
   http_client:
     url: "${SCRIPT_URL}/districts"
     verb: GET
-    rate_limit: once_per_minute
+    rate_limit: once_per_day
 
 pipeline:
   processors:
