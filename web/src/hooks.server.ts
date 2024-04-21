@@ -8,6 +8,23 @@ import type { Handle } from '@sveltejs/kit';
 import type { ExtendedGlobal, ExtendedWebSocket } from '$lib/server/webSocketUtils';
 import type { TaxiAvailability } from '$lib/Map/index.svelte';
 
+/** Required Env Vars  */
+if (!env.KAFKA_BROKER_ADDR) {
+	throw 'KAFKA_BROKER_ADDR must be defined.';
+}
+
+if (!env.USER) {
+	throw 'USER must be defined.';
+}
+
+if (!env.PASSWORD) {
+	throw 'PASSWORD must be defined.';
+}
+
+if (!env.DATABASE_HOST) {
+	throw 'DATABASE_HOST must be defined.';
+}
+
 /** Web Sockets */
 let wssInitialized = false;
 let cachedTaxis: Array<TaxiAvailability> = [];
@@ -22,7 +39,7 @@ const startupWebsocketServer = () => {
 				`[wss:kit] client connected (${ws.socketId}), Cache Length: ${cachedTaxis.length}`
 			);
 
-			ws.send(JSON.stringify(cachedTaxis)); // send cache on connected
+			ws.send(JSON.stringify(cachedTaxis)); // send cache to new client whenever they connect
 
 			ws.on('close', () => {
 				console.log(`[wss:kit] client disconnected (${ws.socketId})`);
@@ -50,11 +67,6 @@ export const handle = (async ({ event, resolve }) => {
 	return response;
 }) satisfies Handle;
 
-/** Kafka  */
-if (!env.KAFKA_BROKER_ADDR) {
-	throw 'KAFKA_BROKER_ADDR must be defaultInclude.';
-}
-
 const kafka = new Kafka({
 	clientId: nanoid(),
 	brokers: [env.KAFKA_BROKER_ADDR]
@@ -69,7 +81,10 @@ await consumer.run({
 	eachMessage: async ({ message }) => {
 		const wss = (globalThis as ExtendedGlobal)[GlobalThisWSS];
 
-		if (!message || !message.value) return;
+		if (!message || !message.value) {
+			console.warn('message or message.value, aborting wss message broadcast');
+			return;
+		}
 
 		const msg = message?.value?.toString();
 		const data = JSON.parse(msg);
@@ -80,9 +95,13 @@ await consumer.run({
 
 		cachedTaxis.push(data);
 
-		if (!wss || !msg) return;
+		if (!wss || !msg) {
+			console.warn('wss or msg not defined, aborting wss message broadcast');
+			return;
+		}
 
 		wss.clients.forEach((c) => {
+			console.log('Sending ', msg);
 			c.send(msg);
 		});
 	}

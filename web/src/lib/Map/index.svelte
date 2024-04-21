@@ -1,11 +1,12 @@
 <script lang="ts" context="module">
 	import type { LngLatLike, LngLatBoundsLike, IControl } from 'maplibre-gl';
 	import { MapboxOverlay as DeckOverlay } from '@deck.gl/mapbox';
-	import { ScatterplotLayer } from '@deck.gl/layers';
+	import { ScatterplotLayer, GeoJsonLayer } from '@deck.gl/layers';
 	import { HeatmapLayer } from '@deck.gl/aggregation-layers';
 	import 'maplibre-gl/dist/maplibre-gl.css';
 	import { onDestroy, onMount } from 'svelte';
 	import { pipe, debounce, makeSubject, subscribe } from 'wonka';
+	import type { Feature, GeoJSON } from 'geojson';
 
 	const SINGAPORE_SOUTHWEST_LNLGAT: LngLatLike = [103.51461, 1.099306];
 	const SINGAPORE_NORTHEAST_LNLGAT: LngLatLike = [104.162353, 1.587878];
@@ -19,6 +20,8 @@
 </script>
 
 <script lang="ts">
+	export let planning_areas: Array<Feature> = [];
+
 	let webSocketEstablished = false;
 	let ws: WebSocket | null = null;
 
@@ -35,6 +38,16 @@
 	const updateDeck = (deck: DeckOverlay) => {
 		deck.setProps({
 			layers: [
+				new GeoJsonLayer({
+					id: 'planning-area-geojson',
+					visible: true,
+					data: planning_areas,
+					getFillColor: [0, 100, 100, 100],
+					getText: (d: Feature) => d.id,
+					getLineWidth: 20,
+					stroked: true,
+					pickable: true
+				}),
 				new ScatterplotLayer<TaxiAvailability>({
 					id: 'taxi-scatterplot',
 					data: taxAvailability,
@@ -159,18 +172,21 @@
 	<button
 		class="p-2 bg-slate-400 rounded-md hover:brightness-110 active:brightness-125 w-full"
 		class:bg-orange-300={layerVisibility.scatter}
+		class:bg-slate-400={!layerVisibility.scatter}
 		on:click={() => {
 			for (let key in layerVisibility) {
 				layerVisibility[key] = false;
 			}
 
 			layerVisibility.scatter = true;
+			layerVisibility = layerVisibility;
 			next(null);
 		}}>Scatter Plot</button
 	>
 	<button
-		class="p-2 bg-slate-400 rounded-md hover:brightness-110 active:brightness-125 w-full"
+		class="p-2 rounded-md hover:brightness-110 active:brightness-125 w-full"
 		class:bg-orange-300={layerVisibility.heatmap}
+		class:bg-slate-400={!layerVisibility.heatmap}
 		on:click={() => {
 			for (let key in layerVisibility) {
 				layerVisibility[key] = false;
