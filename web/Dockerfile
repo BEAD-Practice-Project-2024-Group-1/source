@@ -1,4 +1,4 @@
-FROM node:18.17.1-alpine3.17 AS BUILD
+FROM node:20-alpine3.18 AS BUILD
 
 ENV NODE_OPTIONS=--max_old_space_size=8192
 
@@ -8,16 +8,16 @@ COPY . .
 
 RUN npm ci
 
-RUN npm run build:ci && npm prune --production
+RUN npm run build && npm prune --production
 
-FROM node:18.17.1-alpine3.17
+FROM node:20-alpine3.18
 
 WORKDIR /app
 
-# Only copy in what we need
-COPY --from=BUILD /app/build ./build
-COPY --from=BUILD /app/node_modules ./node_modules
-COPY package.json .
+COPY --from=BUILD /app ./
 
+ENV PORT=4173
 
-CMD [ "node", "build" ]
+EXPOSE 4173
+
+CMD [ "npm", "run", "prodServer" ]

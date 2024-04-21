@@ -58,13 +58,20 @@ services:
             - bead-network
 
     # === Web ===
-    # web:
-    #     restart: always
-    #     build:
-    #         context: ./web
-    #         dockerfile: Dockerfile
-    #     networks:
-    #         - bead-network
+    web:
+        restart: always
+        build:
+            context: ./web
+            dockerfile: Dockerfile
+        environment:
+            USER: ${USER}
+            PASSWORD: ${PASSWORD}
+            DATABASE_HOST: ${DATABASE_HOST}
+            KAFKA_BROKER_ADDR: ${KAFKA_BROKER_ADDR}
+        ports:
+            - 4173:4173
+        networks:
+            - bead-network
 
 # === Volumes (DB) ===
 volumes:
