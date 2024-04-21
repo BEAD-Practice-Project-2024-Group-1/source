@@ -1,6 +1,5 @@
 import os
 from pyspark.sql import SparkSession
-from pyspark.sql.functions import col
 
 USER = os.environ['USER']
 PASSWORD = os.environ['PASSWORD']
@@ -28,19 +27,50 @@ def read_taxi_availability():
       .config("spark.jars", './postgresql-42.7.3.jar') \
       .getOrCreate()
 
+  # SQL query
+  # Fetches the latest taxi availability data for each district
+  # by joining the districts table with the taxi_availability table
+  # and filtering the latest batch_id
+  # The result is grouped by district and ordered by taxi_count in descending order
+  # The taxi_count is calculated by counting the number of taxis in each district
+  # whose location is within the district's geometry boundary
+  # (i.e., the taxi is within the boundaries of the district)
+  # The distance threshold is set to 0 for exact location matching
+  # (i.e., the taxi's location must be exactly within the district's geometry boundary)
+  sql_query =  """
+    SELECT d.name AS district,
+          COUNT(*) AS taxi_count
+    FROM districts d
+    INNER JOIN (
+        SELECT location,
+              batch_id
+        FROM taxi_availability
+        WHERE batch_id = (
+            SELECT batch_id
+            FROM taxi_availability
+            ORDER BY created_at DESC
+            LIMIT 1
+        )
+    ) AS latest_taxis ON ST_Distance(d.location, latest_taxis.location) <= 0
+    GROUP BY d.name
+    ORDER BY taxi_count DESC
+  """
+
   try:
-    # Read data from PostgreSQL table
-    df = spark.read.format("jdbc") \
+    # Fetch latest taxi availability data for each district
+    print("Fetching taxi availability data...")
+    results_df = spark.read.format("jdbc") \
       .option("url", url) \
       .option("driver", "org.postgresql.Driver") \
-      .option("dbtable", "public.districts") \
       .option("user", USER) \
       .option("password", PASSWORD) \
+      .option("query", sql_query) \
       .load()
-
-    # Display results (you can modify this section for specific formatting)
-    print("Districts Data:")
-    df.show(truncate=False)  # Show all rows without truncation
+    print("Taxi availability data fetched successfully.")
+    
+    # Display the result
+    print("Displaying result...")
+    results_df.show()
 
   except Exception as e:
     print(f"Error reading districts data: {str(e)}")
