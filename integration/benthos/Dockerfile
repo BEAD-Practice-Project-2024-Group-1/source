@@ -1,6 +1,8 @@
 
 FROM jeffail/benthos:4.26
 
+WORKDIR /
+
 COPY . .
 
 ENV SCRIPT_URL=${SCRIPT_URL}

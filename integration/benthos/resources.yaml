@@ -9,6 +9,10 @@ rate_limit_resources:
       interval: 1m
 
 output_resources:
+  - label: store_taxi_availability_location_in_csv
+    file:
+      path: /csv/taxi_availability.csv
+      codec: lines
   - label: store_taxi_availability_location_in_database
     sql_raw:
       driver: postgres
@@ -31,3 +35,8 @@ output_resources:
         count: 3000
         byte_size: 0
         period: 1s
+
+processor_resources:
+  - label: taxi_availability_to_csv
+    mapping: |
+      root = "%s, %v, %v".format(this.b_id, this.lon, this.lat)

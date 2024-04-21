@@ -13,5 +13,8 @@ output:
   broker:
     pattern: fan_out
     outputs:
+      - resource: store_taxi_availability_location_in_csv
+        processors:
+          - resource: taxi_availability_to_csv
       - resource: store_taxi_availability_location_in_database
       - resource: publish_taxi_availability_to_kafka
