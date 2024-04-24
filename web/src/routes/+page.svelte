@@ -7,4 +7,4 @@
 	export let data: PageData;
 </script>
 
-<Map planning_areas={data.planning_areas} />
+<Map planning_areas={data.planning_areas} full_day_taxi_availability={data.taxi_availability} />

@@ -12,14 +12,25 @@ const sql = postgres({
 });
 
 export const load: PageServerLoad = async () => {
-	const queryResult = (await sql`
+	const districts = (await sql`
 			SELECT jsonb_build_object(
 				'type', 'Feature',
 				'id', name,
 				'geometry', st_asgeojson( location )::jsonb ) as geojson
 			FROM districts;`) as Array<{ geojson: Feature }>;
 
+	const taxi_availability = await sql`
+			SELECT 
+				batch_id as b_id,
+				created_at,
+				ST_X(ST_Transform (location, 4326)) AS "lon",
+				ST_Y(ST_Transform (location, 4326)) AS "lat"
+			FROM taxi_availability
+			WHERE created_at >= date_subtract(now(), '1 day'::interval) AND created_at < now();
+	`;
+
 	return {
-		planning_areas: queryResult.map((q) => q.geojson)
+		planning_areas: districts.map((q) => q.geojson),
+		taxi_availability
 	};
 };
