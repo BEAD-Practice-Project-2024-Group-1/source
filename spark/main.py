@@ -1,5 +1,6 @@
 import os
 from pyspark.sql import SparkSession
+from flask import Flask
 
 USER = os.environ['USER']
 PASSWORD = os.environ['PASSWORD']
@@ -12,20 +13,22 @@ print("DATABASE_HOST: " + DATABASE_HOST)
 # (Assuming environment variables are set for connection details)
 url = f"jdbc:postgresql://{DATABASE_HOST}:5432/bead"
 
+app = Flask(__name__)
 
+# Create SparkSession
+spark = SparkSession.builder.appName("Spark-PostgreSQL") \
+    .config("spark.jars", './postgresql-42.7.3.jar') \
+    .getOrCreate()
+
+@app.route("/district-taxi-availability")
 def read_taxi_availability():
   """
   Establishes a SparkSession, reads data from the taxi_availability table,
   and displays the results. Handles potential errors during connection or data access.
 
   Returns:
-      None
+    JSON: The result of the SQL query as a JSON object
   """
-
-  # Create SparkSession
-  spark = SparkSession.builder.appName("Spark-PostgreSQL") \
-      .config("spark.jars", './postgresql-42.7.3.jar') \
-      .getOrCreate()
 
   # SQL query
   # Fetches the latest taxi availability data for each district
@@ -71,14 +74,14 @@ def read_taxi_availability():
     # Display the result
     print("Displaying result...")
     results_df.show()
+    return results_df.toJSON().collect()
 
   except Exception as e:
     print(f"Error reading districts data: {str(e)}")
 
   finally:
-    # Stop SparkSession
-    spark.stop()
+    # Note: The SparkSession is not stopped here to allow for multiple requests
+    pass
 
-# Example usage
 if __name__ == "__main__":
-  read_taxi_availability()
+    app.run(host="0.0.0.0", port=8000)
