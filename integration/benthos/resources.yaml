@@ -11,7 +11,7 @@ rate_limit_resources:
 output_resources:
   - label: store_taxi_availability_location_in_csv
     file:
-      path: /csv/taxi_availability.csv
+      path: /csv/taxi_availability_${! now().ts_strftime("%y-%m-%d") }.csv
       codec: lines
   - label: store_taxi_availability_location_in_database
     sql_raw:
@@ -39,4 +39,4 @@ output_resources:
 processor_resources:
   - label: taxi_availability_to_csv
     mapping: |
-      root = "%s, %v, %v".format(this.b_id, this.lon, this.lat)
+      root = "%s,%v,%v,%v".format(this.b_id, this.created_at, this.lon, this.lat)
