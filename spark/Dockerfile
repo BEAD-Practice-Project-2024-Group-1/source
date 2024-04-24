@@ -5,7 +5,7 @@ RUN pip3 install -r requirements.txt
 
 WORKDIR /
 
-COPY main.py .
+COPY ./*.py .
 COPY postgresql-42.7.3.jar .
 
 ENV SPARK_LOCAL_IP=${SPARK_LOCAL_IP}

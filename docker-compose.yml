@@ -1,86 +1,88 @@
 services:
-    # === Database ===
-    db:
-        restart: always
-        build:
-            context: ./datasources/bead_postgres
-            dockerfile: Dockerfile
-        environment:
-            POSTGRES_DB: bead
-            POSTGRES_USER: ${USER}
-            POSTGRES_PASSWORD: ${PASSWORD}
-        ports:
-            - 5432:5432
-        networks:
-            - bead-network
-        volumes:
-            - bead_db:/var/lib/postgresql/data
-    # === Benthos ===
-    benthos:
-        restart: always
-        build:
-            context: ./integration/benthos
-        environment:
-            SCRIPT_URL: ${SCRIPT_URL}
-            USER: ${USER}
-            PASSWORD: ${PASSWORD}
-            DATABASE_HOST: ${DATABASE_HOST}
-            KAFKA_BROKER_ADDR: ${KAFKA_BROKER_ADDR}
-        networks:
-            - bead-network
-        volumes:
-            - ./datasources/csv:/csv
+  # === Database ===
+  db:
+    restart: always
+    build:
+      context: ./datasources/bead_postgres
+      dockerfile: Dockerfile
+    environment:
+      POSTGRES_DB: bead
+      POSTGRES_USER: ${USER}
+      POSTGRES_PASSWORD: ${PASSWORD}
+    ports:
+      - 5432:5432
+    networks:
+      - bead-network
+    volumes:
+      - bead_db:/var/lib/postgresql/data
+  # === Benthos ===
+  benthos:
+    restart: always
+    build:
+      context: ./integration/benthos
+    environment:
+      SCRIPT_URL: ${SCRIPT_URL}
+      USER: ${USER}
+      PASSWORD: ${PASSWORD}
+      DATABASE_HOST: ${DATABASE_HOST}
+      KAFKA_BROKER_ADDR: ${KAFKA_BROKER_ADDR}
+    networks:
+      - bead-network
+    volumes:
+      - ./datasources/csv:/csv
 
-    # === Script Server ===
-    python-server:
-        restart: always
-        build:
-            context: ./integration/python
-            dockerfile: Dockerfile
-        environment:
-            LTA_ACCOUNT_KEY: ${LTA_ACCOUNT_KEY}
-            ONE_MAP_ACCOUNT_KEY: ${ONE_MAP_ACCOUNT_KEY}
-        ports:
-            - 8080:8080
-        networks:
-            - bead-network
-    # === Spark ===
-    spark:
-        build:
-            context: ./spark
-            dockerfile: Dockerfile
-        environment:
-            SPARK_LOCAL_IP: 127.0.0.1
-            SCRIPT_URL: ${SCRIPT_URL}
-            USER: ${USER}
-            PASSWORD: ${PASSWORD}
-            DATABASE_HOST: ${DATABASE_HOST}
-            KAFKA_BROKER_ADDR: ${KAFKA_BROKER_ADDR}
-        networks:
-            - bead-network
+  # === Script Server ===
+  python-server:
+    restart: always
+    build:
+      context: ./integration/python
+      dockerfile: Dockerfile
+    environment:
+      LTA_ACCOUNT_KEY: ${LTA_ACCOUNT_KEY}
+      ONE_MAP_ACCOUNT_KEY: ${ONE_MAP_ACCOUNT_KEY}
+    ports:
+      - 8080:8080
+    networks:
+      - bead-network
+  # === Spark ===
+  spark:
+    build:
+      context: ./spark
+      dockerfile: Dockerfile
+    environment:
+      SPARK_LOCAL_IP: 127.0.0.1
+      SCRIPT_URL: ${SCRIPT_URL}
+      USER: ${USER}
+      PASSWORD: ${PASSWORD}
+      DATABASE_HOST: ${DATABASE_HOST}
+      KAFKA_BROKER_ADDR: ${KAFKA_BROKER_ADDR}
+    ports:
+      - 8000:8000
+    networks:
+      - bead-network
 
-    # === Web ===
-    web:
-        restart: always
-        build:
-            context: ./web
-            dockerfile: Dockerfile
-        environment:
-            USER: ${USER}
-            PASSWORD: ${PASSWORD}
-            DATABASE_HOST: ${DATABASE_HOST}
-            KAFKA_BROKER_ADDR: ${KAFKA_BROKER_ADDR}
-        ports:
-            - 4173:4173
-        networks:
-            - bead-network
+  # === Web ===
+  web:
+    restart: always
+    build:
+      context: ./web
+      dockerfile: Dockerfile
+    environment:
+      USER: ${USER}
+      PASSWORD: ${PASSWORD}
+      DATABASE_HOST: ${DATABASE_HOST}
+      KAFKA_BROKER_ADDR: ${KAFKA_BROKER_ADDR}
+    ports:
+      - 4173:4173
+    networks:
+      - bead-network
 
 # === Volumes (DB) ===
 volumes:
-    bead_db:
+  bead_db:
 
 # === Network ===
 networks:
-    bead-network:
-        driver: bridge
-        name: bead-network
+  bead-network:
+    driver: bridge
+    name: bead-network
