@@ -3,6 +3,7 @@ from flask import Flask
 import requests
 import os
 import uuid
+import datetime
 
 API_URL = "http://datamall2.mytransport.sg/ltaodataservice/Taxi-Availability"
 SKIP_CONST = 500
@@ -22,11 +23,13 @@ def get_taxis():
     all_results = []
 
     batch_id = uuid.uuid4()
+    created_at = datetime.datetime.now().isoformat()
 
     def mapper(e):
         e['lat'] = e.pop('Latitude', None)
         e['lon'] = e.pop('Longitude', None)
-        e["b_id"] = batch_id
+        e['b_id'] = batch_id
+        e['created_at'] = created_at
         return e
 
     while more and counter < QUERY_LIMIT:
