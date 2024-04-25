@@ -15,6 +15,39 @@ services:
       - bead-network
     volumes:
       - bead_db:/var/lib/postgresql/data
+
+  # === Kafka ===
+  kafka:
+    restart: always
+    image: apache/kafka:3.7.0
+    hostname: kafka-1
+    container_name: kafka-1
+    ports:
+      - 9092:9092
+    volumes:
+      - ./source/kafka/config:/mnt/shared/config
+      - ./source/kafka/data:/var/lib/kafka/data
+      - ./source/kafka/secrets:/etc/kafka/secrets
+    networks:
+      - bead-network
+  kafka-init:
+    image: apache/kafka:3.7.0
+    depends_on:
+      - kafka
+    entrypoint: [ '/bin/sh', '-c' ]
+    command: |
+      "
+      sleep 3
+
+      echo -e 'Creating Kafka topics...'
+      /opt/kafka/bin/kafka-topics.sh --bootstrap-server kafka-1:19092 --create --if-not-exists --topic availTaxis
+
+      echo -e 'Listing all Kafka topics:'
+      /opt/kafka/bin/kafka-topics.sh --bootstrap-server kafka-1:19092 --list
+      "
+    networks:
+      - bead-network
+
   # === Benthos ===
   benthos:
     restart: always

@@ -32,13 +32,22 @@ PASSWORD=password
 # Value is example but MUST BE CHANGED to a valid LTA DataMall key - example will not work
 LTA_ACCOUNT_KEY=I_LOVE_ST
 
+# Account key to be used in One Map API calls
+# (SECRET)
+# Value is example but MUST BE CHANGED to a valid One Map key - example will not work
+ONE_MAP_ACCOUNT_KEY=I_REALLY_LOVE_ST
+
 # URL to the script server
 # Example value but correct as a default - host must be docker network alias for the script server
-SCRIPT_URL=http://python-server:8080/
+SCRIPT_URL=http://python-server:8080
 
 # Hostname for the database
 # Example value but correct as a default - must be docker network alias for the script server
 DATABASE_HOST=db
+
+# Address for Kafka Broker
+# Example value but correct as a default
+KAFKA_BROKER_ADDR=kafka-1:19092
 ```
 
 3. Just run the docker compose file and all services should start up fine
