@@ -25,9 +25,9 @@ services:
     ports:
       - 9092:9092
     volumes:
-      - ./source/kafka/config:/mnt/shared/config
-      - ./source/kafka/data:/var/lib/kafka/data
-      - ./source/kafka/secrets:/etc/kafka/secrets
+      - ./kafka/config:/mnt/shared/config
+      - ./kafka/data:/var/lib/kafka/data
+      - ./kafka/secrets:/etc/kafka/secrets
     networks:
       - bead-network
   kafka-init:
