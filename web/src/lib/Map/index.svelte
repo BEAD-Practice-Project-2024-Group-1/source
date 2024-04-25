@@ -70,6 +70,7 @@
 
 	let viewMode: ViewMode = ViewMode.Streaming;
 	let useTimeline = false;
+	let isPlaying = false;
 
 	let time = 0;
 	let deck: DeckOverlay;
@@ -145,8 +146,17 @@
 
 			pipe(
 				source,
-				debounce(() => 1000),
+				debounce(() => 400),
 				subscribe(() => {
+					if (useTimeline) {
+						taxiAvailability =
+							taxi_availability_map.get(
+								`${Math.floor(time / 60)
+									.toString()
+									.padStart(2, '0')}${(time % 60).toString().padStart(2, '0')}`
+							) || [];
+					}
+
 					updateDeck(deck);
 				})
 			);
@@ -201,16 +211,14 @@
 
 	$: if (useTimeline) {
 		viewMode = ViewMode.Timeline;
-
-		taxiAvailability =
-			taxi_availability_map.get(
-				`${Math.floor(time / 60)
-					.toString()
-					.padStart(2, '0')}${(time % 60).toString().padStart(2, '0')}`
-			) || [];
-		updateDeck(deck);
 	} else {
 		viewMode = ViewMode.Streaming;
+	}
+
+	let playInterval: NodeJS.Timeout;
+
+	$: if (time !== -1) {
+		next(null);
 	}
 </script>
 
@@ -271,26 +279,32 @@
 {#if viewMode === ViewMode.Timeline}
 	<div class="fixed bottom-8 w-full px-60 z-0">
 		<div class="flex grow flex-col gap-2 bg-slate-500 rounded-md p-4 opacity-80">
-			<input
-				class="w-full"
-				type="range"
-				min="0"
-				max="1439"
-				bind:value={time}
-				on:change={() => {
-					taxiAvailability =
-						taxi_availability_map.get(
-							`${Math.floor(time / 60)
-								.toString()
-								.padStart(2, '0')}${(time % 60).toString().padStart(2, '0')}`
-						) || [];
-					updateDeck(deck);
-				}}
-			/>
-			<div class="text-white">
-				Time {Math.floor(time / 60)
-					.toString()
-					.padStart(2, '0')}:{(time % 60).toString().padStart(2, '0')}
+			<input class="w-full" type="range" min="0" max="1439" bind:value={time} />
+			<div class="flex gap-2 justify-start items-center">
+				<div>
+					<button
+						on:click={() => {
+							isPlaying = !isPlaying;
+
+							if (isPlaying) {
+								clearInterval(playInterval);
+								playInterval = setInterval(() => {
+									time = time + 1;
+								}, 1000);
+							} else {
+								clearInterval(playInterval);
+							}
+						}}
+						class="rounded-md text-white p-2 w-32 hover:brightness-110 active:brightness-125"
+						class:bg-orange-300={isPlaying}
+						class:bg-slate-400={!isPlaying}>{isPlaying ? 'PAUSE' : 'PLAY'}</button
+					>
+				</div>
+				<div class="text-white">
+					Time <br />{Math.floor(time / 60)
+						.toString()
+						.padStart(2, '0')}:{(time % 60).toString().padStart(2, '0')}
+				</div>
 			</div>
 		</div>
 	</div>

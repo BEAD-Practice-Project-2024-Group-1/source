@@ -29,6 +29,9 @@ export const load: PageServerLoad = async () => {
 			WHERE created_at >= date_subtract(now(), '1 day'::interval) AND created_at < now();
 	`;
 
+	console.debug('Full Previous Day Data Length:', taxi_availability.length);
+	console.debug('All Districts Length:', districts.length);
+
 	return {
 		planning_areas: districts.map((q) => q.geojson),
 		taxi_availability
