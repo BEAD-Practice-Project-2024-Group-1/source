@@ -12,6 +12,13 @@ declare global {
 		// interface PageData {}
 		// interface PageState {}
 		// interface Platform {}
+
+		type HTTPResponseBody<T> = {
+			data?: T;
+			message: string;
+			sent_at: ISO8601Date;
+			errors?: Array<Error>;
+		};
 	}
 }
 

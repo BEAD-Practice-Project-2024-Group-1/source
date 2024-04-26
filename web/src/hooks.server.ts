@@ -101,7 +101,6 @@ await consumer.run({
 		}
 
 		wss.clients.forEach((c) => {
-			console.log('Sending ', msg);
 			c.send(msg);
 		});
 	}

@@ -19,21 +19,9 @@ export const load: PageServerLoad = async () => {
 				'geometry', st_asgeojson( location )::jsonb ) as geojson
 			FROM districts;`) as Array<{ geojson: Feature }>;
 
-	const taxi_availability = await sql`
-			SELECT 
-				batch_id as b_id,
-				created_at,
-				ST_X(ST_Transform (location, 4326)) AS "lon",
-				ST_Y(ST_Transform (location, 4326)) AS "lat"
-			FROM taxi_availability
-			WHERE created_at >= date_subtract(now(), '1 day'::interval) AND created_at < now();
-	`;
-
-	console.debug('Full Previous Day Data Length:', taxi_availability.length);
 	console.debug('All Districts Length:', districts.length);
 
 	return {
-		planning_areas: districts.map((q) => q.geojson),
-		taxi_availability
+		planning_areas: districts.map((q) => q.geojson)
 	};
 };
