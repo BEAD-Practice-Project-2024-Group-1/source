@@ -23,3 +23,10 @@ CREATE TABLE processed.district_taxi_availability (
     dow integer NOT NULL,
     time integer NOT NULL
 );
+
+CREATE TABLE processed.district_time (
+    batch_id uuid NOT NULL,
+    created_at timestamp NOT NULL,
+    dow integer NOT NULL,
+    time integer NOT NULL
+)
