@@ -32,17 +32,17 @@ json_schema = StructType([
     StructField("created_at", StringType(), True),
     StructField("lon", FloatType(), True),
     StructField("lat", FloatType(), True),
-    # Add more fields as needed based on your JSON structure
 ])
 
 # Create the streaming_df to read from kafka
-streaming_df = spark.readStream\
+streaming_df = ( spark.readStream\
     .format("kafka") \
     .option("kafka.bootstrap.servers", os.environ.get('KAFKA_BROKER_ADDR')) \
     .option("subscribe", "availTaxis") \
-    .option("startingOffsets", "earliest") \
+    .option("startingOffsets", "latest") \
     .load() \
-    .select(F.from_json(F.col("value").cast("string"), json_schema).alias("json_data")) \
+    .select(F.from_json(F.col("value").cast("string"), json_schema).alias("json_data"))
+)
 
 # Select the desired columns from the parsed JSON data
 df_with_columns = streaming_df.select(
@@ -53,8 +53,7 @@ df_with_columns = streaming_df.select(
     "json_data.lat"
 )
 
-# Return only first row
-df_with_columns = df_with_columns.limit(1)
+df_with_columns = df_with_columns.dropDuplicates([ "b_id" ])
 
 # Add columns dow and time based on the Singapore timezone
 df_with_columns = df_with_columns.withColumn(
@@ -64,37 +63,24 @@ df_with_columns = df_with_columns.withColumn(
     "time", F.date_format(F.col("created_at_sg"), "HHmm")
 )
 
+df_with_columns = df_with_columns.withColumn("batch_id", F.col("b_id"))
+
 # Select the desired columns from the parsed JSON data
 df_with_columns = df_with_columns.select(
-    "b_id",
+    "batch_id",
     "created_at",
     "dow",
     "time"
 )
 
-# # Write the processed streaming DataFrame to console, showing parsed columns
-# query = df_with_columns.writeStream \
-#     .outputMode("append") \
-#     .format("console") \
-#     .start()
-
-# # Wait for the termination of the query
-# query.awaitTermination()
+# df_with_columns = df_with_columns.groupBy("batch_id")
 
 def foreach_batch_function(df, epoch_id):
+  print("epoch_id:", epoch_id)
+  df.show()
   # Transform and write the DataFrame to PostgreSQL
   df.write.jdbc(url=url, mode="append", table="processed.batch_time", properties=properties)
-#   df.write \
-#       .format("jdbc") \
-#       .option("url", url) \
-#       .option("dbtable", "processed.batch_time") \
-#       .option("user", USER) \
-#       .option("password", PASSWORD) \
-#       .mode("append") \
-#       .save()
+  pass
 
-print("Writing to PostgreSQL...")
-df_with_columns.writeStream \
-  .foreachBatch(foreach_batch_function) \
-  .start() \
-  .awaitTermination()
+# print("Writing to PostgreSQL...")
+df_with_columns.writeStream.foreachBatch(foreach_batch_function).start().awaitTermination()
