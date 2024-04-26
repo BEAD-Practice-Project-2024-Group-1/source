@@ -9,4 +9,6 @@ CREATE TABLE public.districts (
     name text NOT NULL PRIMARY KEY,
     created_at timestamp with time zone DEFAULT now() NOT NULL,
     location geometry(MultiPolygon, 4326)
+    -- dow text NOT NULL,
+    -- time numeric NOT NULL
 )

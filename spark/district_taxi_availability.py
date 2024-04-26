@@ -22,7 +22,7 @@ def get_district_taxi_availability():
     """
 
     # Create SparkSession
-    spark = SparkSession.builder.appName("Spark-PostgreSQL") \
+    spark = SparkSession.builder.appName("District_taxi_availability") \
         .config("spark.jars", './postgresql-42.7.3.jar') \
         .getOrCreate()
 

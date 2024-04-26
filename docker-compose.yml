@@ -94,6 +94,21 @@ services:
     networks:
       - bead-network
 
+  # === Spark Scheduler ===
+  spark-scheduler:
+    build:
+      context: ./spark_scheduler
+      dockerfile: Dockerfile
+    environment:
+      SPARK_LOCAL_IP: 127.0.0.1
+      SCRIPT_URL: ${SCRIPT_URL}
+      USER: ${USER}
+      PASSWORD: ${PASSWORD}
+      DATABASE_HOST: ${DATABASE_HOST}
+      KAFKA_BROKER_ADDR: ${KAFKA_BROKER_ADDR}
+    networks:
+      - bead-network
+
   # === Web ===
   web:
     restart: always
