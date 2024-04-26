@@ -10,13 +10,19 @@ DATABASE_HOST = os.environ['DATABASE_HOST']
 # (Assuming environment variables are set for connection details)
 url = f"jdbc:postgresql://{DATABASE_HOST}:5432/bead"
 
+properties = {
+    "user": USER,
+    "password": PASSWORD,
+    "driver": "org.postgresql.Driver",
+    "stringtype": "unspecified"
+}
+
 spark = SparkSession \
     .builder \
     .appName("Streaming from Kafka") \
     .config("spark.streaming.stopGracefullyOnShutdown", True) \
     .config('spark.jars.packages', 'org.apache.spark:spark-sql-kafka-0-10_2.12:3.2.0') \
     .config("spark.jars", './postgresql-42.7.3.jar') \
-    .config("spark.sql.shuffle.partitions", 4) \
     .master("local[*]") \
     .getOrCreate()
 
@@ -66,42 +72,29 @@ df_with_columns = df_with_columns.select(
     "time"
 )
 
-# Write the processed streaming DataFrame to the database table batch_time
+# # Write the processed streaming DataFrame to console, showing parsed columns
+# query = df_with_columns.writeStream \
+#     .outputMode("append") \
+#     .format("console") \
+#     .start()
+
+# # Wait for the termination of the query
+# query.awaitTermination()
+
+def foreach_batch_function(df, epoch_id):
+  # Transform and write the DataFrame to PostgreSQL
+  df.write.jdbc(url=url, mode="append", table="processed.batch_time", properties=properties)
+#   df.write \
+#       .format("jdbc") \
+#       .option("url", url) \
+#       .option("dbtable", "processed.batch_time") \
+#       .option("user", USER) \
+#       .option("password", PASSWORD) \
+#       .mode("append") \
+#       .save()
+
+print("Writing to PostgreSQL...")
 df_with_columns.writeStream \
-    .outputMode("append") \
-    .foreachBatch(lambda batch_df: batch_df.write \
-        .format("jdbc") \
-        .option("url", url) \
-        .option("dbtable", "processed.batch_time") \
-        .option("user", USER) \
-        .option("password", PASSWORD) \
-        .option("driver", "org.postgresql.Driver") \
-        .save(
-            mode="append"
-        ) \
-        .start() 
-    )
-
-# Start the streaming query
-df_with_columns.start()
-
-# Write the processed streaming DataFrame to console, showing parsed columns
-query = df_with_columns.writeStream \
-    .outputMode("append") \
-    .format("console") \
-    .start()
-
-# Write the processed streaming DataFrame to the database table batch_time
-query = df_with_columns.writeStream \
-    .outputMode("append") \
-    .foreachBatch(lambda batch_df, batch_id: batch_df.write.jdbc(
-        url=url,
-        table="batch_time",
-        mode="append",
-        driver="org.postgresql.Driver",
-        properties={"user": USER, "password": PASSWORD}
-    )) \
-    .start()
-
-# Start the streaming query
-query.awaitTermination()
+  .foreachBatch(foreach_batch_function) \
+  .start() \
+  .awaitTermination()
