@@ -12,3 +12,14 @@ CREATE TABLE public.districts (
     -- dow text NOT NULL,
     -- time numeric NOT NULL
 )
+
+CREATE SCHEMA IF NOT EXIST processed
+
+CREATE TABLE processed.district_taxi_availability (
+    id uuid DEFAULT gen_random_uuid() NOT NULL PRIMARY KEY,
+    batch_id uuid NOT NULL,
+    district text NOT NULL,
+    available_taxi_count integer NOT NULL,
+    dow integer NOT NULL,
+    time integer NOT NULL
+);

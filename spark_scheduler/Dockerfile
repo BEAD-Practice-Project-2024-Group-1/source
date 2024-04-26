@@ -15,5 +15,5 @@ ENV PASSWORD=${PASSWORD}
 ENV DATABASE_HOST=${DATABASE_HOST}
 
 # Run the application.
-CMD python3 scheduler.py 
+CMD python3 convert_kafka_stream.py
 
