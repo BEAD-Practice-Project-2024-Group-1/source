@@ -1,6 +1,8 @@
 from flask import Flask
 from district_taxi_availability import get_district_taxi_availability
 from ingest_s3_data import ingest_bucket
+from process_taxi_availability_time import process_taxi_availability_time
+
 app = Flask(__name__)
 
 @app.route("/district-taxi-availability")
@@ -22,6 +24,17 @@ def pull_s3_data():
     """
 
     ingest_bucket()
+    
+    return "Sucess!"
+
+
+@app.route("/process-taxi-availability-time")
+def process_taxi_availability_time_handler():
+    """
+    Create time and day information for each batch
+    """
+
+    process_taxi_availability_time()
     
     return "Sucess!"
 
