@@ -9,6 +9,11 @@
 	import type { Feature } from 'geojson';
 	import * as turf from '@turf/turf';
 	import dayjs from 'dayjs';
+	import timezone from 'dayjs/plugin/timezone';
+	import utc from 'dayjs/plugin/utc';
+
+	dayjs.extend(utc);
+	dayjs.extend(timezone);
 
 	const SINGAPORE_SOUTHWEST_LNLGAT: LngLatLike = [103.51461, 1.099306];
 	const SINGAPORE_NORTHEAST_LNLGAT: LngLatLike = [104.162353, 1.587878];
@@ -31,6 +36,8 @@
 	export let planning_areas: Array<Feature> = [];
 	export let full_day_taxi_availability: Array<TaxiAvailability> = [];
 
+	let cache_availability_stream: Array<TaxiAvailability> = [];
+
 	const districts = planning_areas.map((pa) => {
 		let geometries = [];
 		geometries.push(turf.center(pa).geometry);
@@ -50,7 +57,7 @@
 
 	const taxi_availability_map = new Map<string, Array<TaxiAvailability>>();
 	full_day_taxi_availability.forEach((t) => {
-		const key = dayjs(t.created_at).format('hhmm');
+		const key = dayjs.utc(t.created_at).tz('Singapore').format('HHmm');
 		if (taxi_availability_map.has(key)) {
 			taxi_availability_map.get(key)?.push(t);
 		} else {
@@ -155,6 +162,8 @@
 									.toString()
 									.padStart(2, '0')}${(time % 60).toString().padStart(2, '0')}`
 							) || [];
+					} else {
+						taxiAvailability = cache_availability_stream;
 					}
 
 					updateDeck(deck);
@@ -183,14 +192,17 @@
 				const data = JSON.parse(event.data);
 
 				const processTaxi = (taxi: TaxiAvailability) => {
-					if (taxiAvailability.length > 0 && taxiAvailability[0]?.b_id != taxi.b_id) {
-						const oldid = taxiAvailability[0].b_id;
+					if (
+						cache_availability_stream.length > 0 &&
+						cache_availability_stream[0]?.b_id != taxi.b_id
+					) {
+						const oldid = cache_availability_stream[0].b_id;
 						const newid = taxi.b_id;
-						taxiAvailability = []; // reset on new batch
+						cache_availability_stream = []; // reset on new batch
 						console.log('Reset due to new batch - Old Id: ', oldid, ' New Id: ', newid);
 					}
 
-					taxiAvailability.push(taxi);
+					cache_availability_stream.push(taxi);
 					next(null);
 				};
 
@@ -211,8 +223,10 @@
 
 	$: if (useTimeline) {
 		viewMode = ViewMode.Timeline;
+		next(null);
 	} else {
 		viewMode = ViewMode.Streaming;
+		next(null);
 	}
 
 	let playInterval: NodeJS.Timeout;
@@ -232,6 +246,8 @@
 			<div>{selectedTaxi.lon}</div>
 			<div>Latitude:</div>
 			<div>{selectedTaxi.lat}</div>
+			<div>Created At:</div>
+			<div>{dayjs.utc(selectedTaxi.created_at).tz('Singapore').format('HHmm - DD/MM/YYYY')}</div>
 		</div>
 	</div>
 {/if}
