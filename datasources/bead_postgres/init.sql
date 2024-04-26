@@ -24,7 +24,7 @@ CREATE TABLE processed.district_taxi_availability (
     time integer NOT NULL
 );
 
-CREATE TABLE processed.district_time (
+CREATE TABLE processed.batch_time (
     batch_id uuid NOT NULL,
     created_at timestamp NOT NULL,
     dow integer NOT NULL,
