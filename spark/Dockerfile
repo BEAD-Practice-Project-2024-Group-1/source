@@ -15,4 +15,9 @@ ENV USER=${USER}
 ENV PASSWORD=${PASSWORD}
 ENV DATABASE_HOST=${DATABASE_HOST}
 
-CMD python ./main.py
+# Expose the port that the application listens on.
+EXPOSE 8000
+
+# Run the application.
+CMD python3 -m flask --app main run --host=0.0.0.0 --port=8000
+

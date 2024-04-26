@@ -8,7 +8,7 @@ app = Flask(__name__)
 @app.route("/district-taxi-availability")
 def read_taxi_availability():
     """
-    Read data from the taxi_availability table and display latest taxi availability for each district
+    Display latest taxi availability for each district
 
     Returns:
         JSON: The result of the SQL query as a JSON object
