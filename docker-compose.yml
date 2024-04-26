@@ -32,6 +32,10 @@ services:
       - bead-network
   kafka-init:
     image: apache/kafka:3.7.0
+    volumes:
+      - ./kafka/config:/mnt/shared/config
+      - ./kafka/data:/var/lib/kafka/data
+      - ./kafka/secrets:/etc/kafka/secrets
     depends_on:
       - kafka
     entrypoint: [ '/bin/sh', '-c' ]
