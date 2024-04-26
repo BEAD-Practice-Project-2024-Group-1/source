@@ -6,14 +6,16 @@
 	import 'maplibre-gl/dist/maplibre-gl.css';
 	import { onDestroy, onMount } from 'svelte';
 	import { pipe, debounce, makeSubject, subscribe } from 'wonka';
-	import type { Feature } from 'geojson';
+	import type { Feature, FeatureCollection, Point } from 'geojson';
 	import * as turf from '@turf/turf';
 	import dayjs from 'dayjs';
 	import timezone from 'dayjs/plugin/timezone';
+	import duration from 'dayjs/plugin/duration';
 	import utc from 'dayjs/plugin/utc';
 
 	dayjs.extend(utc);
 	dayjs.extend(timezone);
+	dayjs.extend(duration);
 
 	const SINGAPORE_SOUTHWEST_LNLGAT: LngLatLike = [103.51461, 1.099306];
 	const SINGAPORE_NORTHEAST_LNLGAT: LngLatLike = [104.162353, 1.587878];
@@ -34,9 +36,9 @@
 
 <script lang="ts">
 	export let planning_areas: Array<Feature> = [];
-	export let full_day_taxi_availability: Array<TaxiAvailability> = [];
 
 	let cache_availability_stream: Array<TaxiAvailability> = [];
+	let clustered: Array<Feature> = [];
 
 	const districts = planning_areas.map((pa) => {
 		let geometries = [];
@@ -56,14 +58,14 @@
 	});
 
 	const taxi_availability_map = new Map<string, Array<TaxiAvailability>>();
-	full_day_taxi_availability.forEach((t) => {
-		const key = dayjs.utc(t.created_at).tz('Singapore').format('HHmm');
-		if (taxi_availability_map.has(key)) {
-			taxi_availability_map.get(key)?.push(t);
-		} else {
-			taxi_availability_map.set(key, [t]);
-		}
-	});
+	// full_day_taxi_availability.forEach((t) => {
+	// 	const key = dayjs.utc(t.created_at).tz('Singapore').format('HHmm');
+	// 	if (taxi_availability_map.has(key)) {
+	// 		taxi_availability_map.get(key)?.push(t);
+	// 	} else {
+	// 		taxi_availability_map.set(key, [t]);
+	// 	}
+	// });
 
 	let webSocketEstablished = false;
 	let ws: WebSocket | null = null;
@@ -72,7 +74,8 @@
 	let selectedTaxi: TaxiAvailability;
 	let layerVisibility: Record<string, boolean> = {
 		scatter: true,
-		heatmap: false
+		heatmap: false,
+		cluster: false
 	};
 
 	let viewMode: ViewMode = ViewMode.Streaming;
@@ -80,6 +83,7 @@
 	let isPlaying = false;
 
 	let time = 0;
+	let noOfClusters = 2;
 	let deck: DeckOverlay;
 
 	let subject = makeSubject();
@@ -117,6 +121,23 @@
 						selectedTaxi = info?.object;
 					}
 				}),
+				new ScatterplotLayer<Feature<Point>>({
+					id: 'taxi-k-means-cluster',
+					data: clustered,
+					visible: layerVisibility.cluster,
+					filled: true,
+					radiusUnits: 'pixels',
+					getFillColor: [150, 0, 150, 200],
+					getPosition: (f: Feature<Point>) => f.geometry.coordinates,
+					getRadius: (f: Feature<Point>) => f.properties.count,
+					pickable: false,
+					autoHighlight: true,
+					radiusScale: 0.3,
+					opacity: 1,
+					parameters: {
+						blend: true
+					}
+				}),
 				new HeatmapLayer<TaxiAvailability>({
 					id: 'taxi-heatmap',
 					visible: layerVisibility.heatmap,
@@ -124,7 +145,7 @@
 					aggregation: 'SUM',
 					getPosition: (d: TaxiAvailability) => [d.lon, d.lat],
 					getWeight: (d) => 1,
-					radiusPixels: 25
+					radiusPixels: 50
 				})
 			]
 		});
@@ -153,17 +174,53 @@
 
 			pipe(
 				source,
-				debounce(() => 400),
-				subscribe(() => {
+				debounce(() => 200),
+				subscribe(async () => {
 					if (useTimeline) {
-						taxiAvailability =
-							taxi_availability_map.get(
-								`${Math.floor(time / 60)
-									.toString()
-									.padStart(2, '0')}${(time % 60).toString().padStart(2, '0')}`
-							) || [];
+						const response = await fetch(`/taxi_by_time?time=${time}`);
+
+						taxiAvailability = (await response.json()).data;
 					} else {
 						taxiAvailability = cache_availability_stream;
+					}
+
+					if (layerVisibility.cluster) {
+						taxiAvailability;
+						const fc: FeatureCollection<Point> = {
+							type: 'FeatureCollection',
+							features: taxiAvailability.map((ta) => {
+								return {
+									type: 'Feature',
+									geometry: {
+										type: 'Point',
+										coordinates: [ta.lon, ta.lat]
+									},
+									properties: {}
+								};
+							})
+						};
+
+						const clusterAugmented = turf.clustersKmeans(fc, { numberOfClusters: noOfClusters });
+
+						const cMap = new Map<string, Feature>();
+
+						console.log(clusterAugmented);
+						clusterAugmented.features.forEach((ca) => {
+							cMap.set(ca.properties.cluster, {
+								type: 'Feature',
+								geometry: {
+									type: 'Point',
+									coordinates: ca.properties.centroid
+								},
+								properties: {
+									cluster: ca.properties.cluster,
+									count: cMap.get(ca.properties.cluster)?.properties.count + 1 || 1
+								}
+							});
+						});
+
+						clustered = Array.from(cMap.values());
+						console.log(clustered);
 					}
 
 					updateDeck(deck);
@@ -234,6 +291,10 @@
 	$: if (time !== -1) {
 		next(null);
 	}
+
+	$: if (noOfClusters !== -1) {
+		next(null);
+	}
 </script>
 
 <div class="h-screen w-screen" id="map"></div>
@@ -282,6 +343,25 @@
 			next(null);
 		}}>Heatmap</button
 	>
+	<div class="flex flex-col gap-1 p-3 w-full bg-slate-800 rounded-md">
+		<button
+			class="p-2 rounded-md hover:brightness-110 active:brightness-125 w-full"
+			class:bg-orange-300={layerVisibility.cluster}
+			class:bg-slate-400={!layerVisibility.cluster}
+			on:click={() => {
+				for (let key in layerVisibility) {
+					layerVisibility[key] = false;
+				}
+
+				layerVisibility.cluster = true;
+				next(null);
+			}}>Cluster</button
+		>
+		<div class="flex gap-2 p-1">
+			<input class="w-full" type="range" min="2" max="50" bind:value={noOfClusters} />
+			{noOfClusters}
+		</div>
+	</div>
 
 	<label class="inline-flex items-center cursor-pointer">
 		<input type="checkbox" bind:checked={useTimeline} class="sr-only peer" />
@@ -316,10 +396,19 @@
 						class:bg-slate-400={!isPlaying}>{isPlaying ? 'PAUSE' : 'PLAY'}</button
 					>
 				</div>
-				<div class="text-white">
-					Time <br />{Math.floor(time / 60)
-						.toString()
-						.padStart(2, '0')}:{(time % 60).toString().padStart(2, '0')}
+				<div class="grid grid-cols-2 gap-2 grid-rows-2 text-white">
+					<div>Data From:</div>
+					<div>
+						{dayjs()
+							.subtract(dayjs.duration({ days: 1 }))
+							.format('DD/MM/YYYY')}
+					</div>
+					<div>Time:</div>
+					<div>
+						{Math.floor(time / 60)
+							.toString()
+							.padStart(2, '0')}:{(time % 60).toString().padStart(2, '0')}
+					</div>
 				</div>
 			</div>
 		</div>
