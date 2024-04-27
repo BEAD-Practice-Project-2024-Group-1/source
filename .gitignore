@@ -3,5 +3,5 @@
 data/*
 **/__pycache__
 datasources/temp
-docker-compose-windows.yml
+docker-compose_windows.yml
 spark/taxi_availability*

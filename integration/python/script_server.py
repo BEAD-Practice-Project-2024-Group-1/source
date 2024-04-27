@@ -13,6 +13,8 @@ HEADERS = {
     "AccountKey": os.environ.get('LTA_ACCOUNT_KEY')
 }
 
+print("LTA Account Key: " + os.environ.get('LTA_ACCOUNT_KEY'))
+
 app = Flask(__name__)
 
 @app.route("/taxi-availability")

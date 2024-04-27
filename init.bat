@@ -27,13 +27,3 @@ for /F "delims=" %%L in (docker-compose.yml) do (
     echo !UPDATED_LINE! >> docker-compose_windows.yml
 )
 setlocal DisableDelayedExpansion
-
-REM =============================
-REM start up
-REM =============================
-docker compose -f docker-compose_windows.yml up -d
-
-REM =============================
-REM delete windows
-REM =============================
-del docker-compose_windows.yml
