@@ -14,7 +14,7 @@ This repository contains all the source code for group 1's project in a big mono
     cp .env.sample .env
     ```
 
-2. Fill up all the environment variables appropraitely - each one has a description of what they are for inline
+2. Fill up all the environment variables appropriately - each one has a description of what they are for inline
    as comments.
 
     ```bash
@@ -52,46 +52,46 @@ This repository contains all the source code for group 1's project in a big mono
 
 3. Start up
 
-    Windows:
+   - Windows:
 
-    a. Run the `init.bat` file to generate the `docker-compose` with absolute paths. On Windows, the `docker-compose` file's
-    volume mappings do not work with relative paths so the `init.bat` will generate a modified compose file for you
+     a. Run the `init.bat` file to generate the `docker-compose` with absolute paths. On Windows, the `docker-compose` file's
+     volume mappings do not work with relative paths so the `init.bat` will generate a modified compose file for you
 
-    ```
-    ./init.bat
-    ```
+     ```
+     init.bat
+     ```
 
-    b. Run the docker compose file:
+     b. Run the docker compose file:
 
-    ```
-    docker compose -f docker-compose_windows.yml up -d
-    ```
+     ```
+     docker compose -f docker-compose_windows.yml up -d
+     ```
 
-    MacOS / Linux:
+   - MacOS / Linux:
 
-    Note: You only need to run `source .env` if your environment is already polluted from the development env vars
+     Note: You only need to run `source .env` if your environment is already polluted from the development env vars
 
-    ```bash
-    source .env
-    docker compose up
-    ```
+     ```bash
+     source .env
+     docker compose up
+     ```
 
 4. View the output
 
-The default web application is served at [http://locahost:4173](http://locahost:4173).
+   The default web application is served at [http://locahost:4173](http://locahost:4173).
 
-We have a Python Flask server running at [http://localhost:8000](http://localhost:8000), it's used to conveniently trigger
-Spark jobs.
+   We have a Python Flask server running at [http://localhost:8000](http://localhost:8000), it's used to conveniently trigger
+ Spark jobs.
 
-To pull the data from S3 (public bucket, please don't spam) - [http://localhost:8000/s3-ingest](http://localhost:8000/s3-ingest)
+   To pull the data from S3 (public bucket, please don't spam) - [http://localhost:8000/s3-ingest](http://localhost:8000/s3-ingest)
 and wait for it to download, it might take a minute or so.
 
-After ingesting the data, the timeline on the web visualization at [http://locahost:4173](http://locahost:4173) will
+   After ingesting the data, the timeline on the web visualization at [http://locahost:4173](http://locahost:4173) will
 have data for you to view.
 
-You can also get information for the aggregation of taxi availability per district (counts of each point in each district) at [http://localhost:8000/district-taxi-availability](http://localhost:8000/district-taxi-availability)
+   You can also get information for the aggregation of taxi availability per district (counts of each point in each district) at [http://localhost:8000/district-taxi-availability](http://localhost:8000/district-taxi-availability)
 
-We also have a batch job to convert all the taxi availability times to 'day of week' and 'time of day' for machine learning at [http://localhost:8000/process-taxi-availability-time](http://localhost:8000/process-taxi-availability-time) but this will have no visible change on the front end (format meant to be used for machine learning).
+   We also have a batch job to convert all the taxi availability times to 'day of week' and 'time of day' for machine learning at [http://localhost:8000/process-taxi-availability-time](http://localhost:8000/process-taxi-availability-time) but this will have no visible change on the front end (format meant to be used for machine learning).
 
 ## Other Notes
 
