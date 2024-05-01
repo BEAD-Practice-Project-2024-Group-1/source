@@ -19,6 +19,11 @@ REM =============================
 REM get absolute path of current directory
 for %%I in (.) do set CURRENT_DIR=%%~fI
 
+REM delete docker-compose_windows.yml if it exists
+if exist docker-compose_windows.yml (
+  del docker-compose_windows.yml
+)
+
 REM iterate over docker-compose.yml to replace paths
 setlocal enabledelayedexpansion
 for /F "delims=" %%L in (docker-compose.yml) do (
