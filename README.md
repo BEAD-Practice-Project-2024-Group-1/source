@@ -78,7 +78,7 @@ This repository contains all the source code for group 1's project in a big mono
 
 4. View the output
 
-   The default web application is served at [http://locahost:4173](http://locahost:4173).
+   The default web application is served at [http://localhost:4173](http://localhost:4173).
 
    We have a Python Flask server running at [http://localhost:8000](http://localhost:8000), it's used to conveniently trigger
  Spark jobs.
@@ -86,7 +86,7 @@ This repository contains all the source code for group 1's project in a big mono
    To pull the data from S3 (public bucket, please don't spam) - [http://localhost:8000/s3-ingest](http://localhost:8000/s3-ingest)
 and wait for it to download, it might take a minute or so.
 
-   After ingesting the data, the timeline on the web visualization at [http://locahost:4173](http://locahost:4173) will
+   After ingesting the data, the timeline on the web visualization at [http://localhost:4173](http://localhost:4173) will
 have data for you to view.
 
    You can also get information for the aggregation of taxi availability per district (counts of each point in each district) at [http://localhost:8000/district-taxi-availability](http://localhost:8000/district-taxi-availability)
