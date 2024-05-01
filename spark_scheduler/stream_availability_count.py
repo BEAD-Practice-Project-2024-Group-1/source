@@ -78,17 +78,23 @@ streaming_df = streaming_df.withColumn("created_at", F.to_timestamp(F.col("creat
 
 taxi_counts_by_district = districts_df.crossJoin(streaming_df) \
     .filter( point_in_poly( F.col("point"), F.col("polygon") ) ) \
-    .withWatermark("created_at", "5 seconds") \
-    .groupBy( F.window( F.col("created_at"), "1 minute" ), F.col("name") ) \
+    .withWatermark("created_at", "15 seconds") \
+    .groupBy( F.window( F.col("created_at"), "15 seconds" ), F.col("name") ) \
     .count()
 
-def foreach_batch_function(df, epoch_id):
-  print("epoch_id:", epoch_id)
-  df.show()
-  pass
+# def foreach_batch_function(df, epoch_id):
+#   print("epoch_id:", epoch_id)
+#   df.show()
+#   pass
 
-taxi_counts_by_district.writeStream.foreachBatch(foreach_batch_function).start().awaitTermination()
-
+taxi_counts_by_district \
+    .writeStream \
+    .format("kafka") \
+    .option("kafka.bootstrap.servers", os.environ.get('KAFKA_BROKER_ADDR')) \
+    .option("topic", "districtCounts") \
+    .option("checkpointLocation", "./checkpoint") \
+    .start() \
+    .awaitTermination()
 
 # print("Writing to PostgreSQL...")
-# df_with_columns.writeStream.foreachBatch(foreach_batch_function).start().awaitTermination()
+# taxi_counts_by_district.writeStream.foreachBatch(foreach_batch_function).start().awaitTermination()
