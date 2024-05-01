@@ -1,6 +1,7 @@
 FROM gcr.io/datamechanics/spark:platform-3.2-latest
 
 COPY requirements.txt .
+RUN pip install --user --upgrade pip
 RUN pip3 install -r requirements.txt
 
 WORKDIR /
@@ -16,5 +17,5 @@ ENV DATABASE_HOST=${DATABASE_HOST}
 ENV KAFKA_BROKER_ADDR=${KAFKA_BROKER_ADDR}
 
 # Run the application.
-CMD python3 convert_kafka_stream.py
+CMD python3 stream_availability_count.py
 
