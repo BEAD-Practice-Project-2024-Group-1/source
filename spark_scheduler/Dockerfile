@@ -16,5 +16,5 @@ ENV DATABASE_HOST=${DATABASE_HOST}
 ENV KAFKA_BROKER_ADDR=${KAFKA_BROKER_ADDR}
 
 # Run the application.
-CMD python3 convert_kafka_stream.py
+CMD python3 stream_availability_count.py
 

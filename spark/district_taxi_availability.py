@@ -51,7 +51,7 @@ def get_district_taxi_availability():
                 ORDER BY created_at DESC
                 LIMIT 1
             )
-        ) AS latest_taxis ON ST_Distance(d.location, latest_taxis.location) <= 0
+        ) AS latest_taxis ON ST_Contains(d.location, latest_taxis.location)
         GROUP BY d.name
         ORDER BY taxi_count DESC
     """
