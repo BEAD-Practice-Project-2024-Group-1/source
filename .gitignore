@@ -7,4 +7,4 @@ docker-compose_windows.yml
 spark/taxi_availability*
 spark_scheduler/checkpoint
 spark_scheduler/test
-datasources/*.csv
+datasources/csv/*.csv
