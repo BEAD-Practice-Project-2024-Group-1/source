@@ -1,6 +1,7 @@
 from flask import Flask
 from district_taxi_availability import get_district_taxi_availability
 from ingest_s3_data import ingest_bucket
+from ingest_csv_data import ingest_csv
 from process_taxi_availability_time import process_taxi_availability_time
 
 app = Flask(__name__)
@@ -24,6 +25,16 @@ def pull_s3_data():
     """
 
     ingest_bucket()
+    
+    return "Sucess!"
+
+@app.route("/csv-ingest")
+def ingest_csv_data():
+    """
+    Get CSV data and store in database
+    """
+
+    ingest_csv()
     
     return "Sucess!"
 

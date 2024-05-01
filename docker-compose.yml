@@ -98,6 +98,8 @@ services:
             - 8000:8000
         networks:
             - bead-network
+        volumes:
+            - ./datasources/csv:/app/csv
 
     # === Spark Scheduler ===
     spark-scheduler:
